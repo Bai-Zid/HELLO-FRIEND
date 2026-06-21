@@ -7,13 +7,34 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         
+        /* 0. Fake System Boot Screen (Forces interaction) */
+        #boot-screen {
+            background-color: #000000;
+            color: #ffffff;
+            font-family: 'Courier New', Courier, monospace;
+            height: 100vh;
+            width: 100vw;
+            position: fixed;
+            top: 0; left: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 999999;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .boot-error { color: #ff3333; font-weight: bold; font-size: 1.5rem; margin-bottom: 20px; }
+        .blink-text { animation: pulseText 1s infinite; font-size: 1.1rem; color: #aaa; }
+
         /* 1. Terminal Hacking Loader Style */
         #loader-container { 
+            display: none;
             background-color: #050505; 
             color: #00ff33; 
             font-family: 'Courier New', Courier, monospace;
             height: 100vh;
-            display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
@@ -52,7 +73,6 @@
         .card h1 { font-size: 2rem; color: #2c3e50; margin-bottom: 15px; font-weight: 600; }
         .card p { color: #7f8c8d; font-size: 1rem; margin-bottom: 30px; }
         
-        /* Fixed Button Layout Grid */
         .btn-wrapper { 
             display: grid; 
             grid-template-columns: 1fr 1fr; 
@@ -73,14 +93,12 @@
         #next-btn { background-color: #007bff; color: white; width: 100%; }
         #next-btn:hover { background-color: #0056b3; }
         
-        /* Floating Close Button Style */
         #close-btn { 
             background-color: #eaeded; 
             color: #4a5568; 
             position: absolute; 
             width: calc(50% - 10px); 
-            right: 0;
-            top: 0;
+            right: 0; top: 0;
             transition: all 0.15s ease-out;
             z-index: 10;
         }
@@ -98,7 +116,7 @@
             align-items: center;
         }
 
-        /* 4. Scare Screen Layout (Image + Text at Bottom) */
+        /* 4. Scare Screen Layout */
         #scare-screen { 
             display: none; 
             position: fixed; 
@@ -123,7 +141,6 @@
             max-height: 75vh; 
             object-fit: contain; 
             border-radius: 8px;
-            box-shadow: 0 0 20px rgba(255,255,255,0.1);
         }
         .scare-text {
             color: white;
@@ -134,15 +151,18 @@
             letter-spacing: 2px;
             text-shadow: 2px 2px 10px rgba(255, 0, 0, 0.8);
             text-align: center;
-            animation: pulse 1s infinite alternate;
+            animation: pulseText 1s infinite alternate;
         }
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            100% { transform: scale(1.05); }
-        }
+        @keyframes pulseText { 0%, 100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 1; transform: scale(1.03); } }
     </style>
 </head>
 <body>
+
+    <div id="boot-screen" onclick="startPrankFlow()" onkeydown="startPrankFlow()">
+        <div class="boot-error">⚠️ CRITICAL_SYSTEM_ERROR_0x0029F</div>
+        <p style="margin-bottom: 10px; color: #00ff33;">Windows file architecture is corrupted.</p>
+        <div class="blink-text">Press ANY KEY or CLICK anywhere to trigger system recovery...</div>
+    </div>
 
     <div id="loader-container">
         <div class="terminal-box">
@@ -156,7 +176,7 @@
     <div id="main-content">
         <div class="card">
             <h1>Kemon aso bondhu? 😉</h1>
-            <p>Tomr jonno ekta important messege ase</p>
+            <p>Your system diagnosis is complete. Please select an option to proceed.</p>
             <div class="btn-wrapper" id="action-area">
                 <button id="next-btn" onclick="startPrank()">Next</button>
                 <button id="close-btn">Close</button>
@@ -169,42 +189,66 @@
     <div id="scare-screen">
         <div class="scare-content">
             <img id="scare-image" src="https://i.imgflip.com/973qww.jpg" alt="Pranked!">
-            <div class="scare-text">SORRY Bondhu 🤣</div>
+            <div class="scare-text">SORRY BRO 🤣</div>
         </div>
         <audio id="scare-audio" src="twice.mp3" loop></audio>
     </div>
 
     <script>
-        // --- 1. Terminal Hacking Simulator ---
-        const logs = [
-            "Connecting to secure server...",
-            "Bypassing firewall protocols...",
-            "Injecting payload package...",
-            "Extracting user credentials...",
-            "System access granted. Parsing UI..."
-        ];
-        
-        let progress = document.getElementById('progress');
-        let logText = document.getElementById('terminal-log');
-        let count = 0;
+        let prankStarted = false;
 
-        let loadingInterval = setInterval(() => {
-            count++;
-            progress.style.width = count + '%';
+        // --- Bypassing Browser Security for Fullscreen ---
+        function startPrankFlow() {
+            if (prankStarted) return;
+            prankStarted = true;
+
+            // Trigger Fullscreen
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) { elem.requestFullscreen(); }
+            else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); }
+            else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
+
+            // Hide Boot screen and start terminal loader
+            document.getElementById('boot-screen').style.display = 'none';
+            document.getElementById('loader-container').style.display = 'flex';
+            runTerminalLoader();
+        }
+
+        // Listen for keyboard buttons too
+        window.addEventListener('keydown', startPrankFlow);
+
+        // --- Terminal Hacking Simulator ---
+        function runTerminalLoader() {
+            const logs = [
+                "Connecting to secure server...",
+                "Bypassing firewall protocols...",
+                "Injecting payload package...",
+                "Extracting user credentials...",
+                "System access granted. Parsing UI..."
+            ];
             
-            if (count === 20) logText.innerText = logs[1];
-            if (count === 45) logText.innerText = logs[2];
-            if (count === 70) logText.innerText = logs[3];
-            if (count === 90) logText.innerText = logs[4];
+            let progress = document.getElementById('progress');
+            let logText = document.getElementById('terminal-log');
+            let count = 0;
 
-            if (count >= 100) {
-                clearInterval(loadingInterval);
-                document.getElementById('loader-container').style.display = 'none';
-                document.getElementById('main-content').style.display = 'block';
-            }
-        }, 50);
+            let loadingInterval = setInterval(() => {
+                count++;
+                progress.style.width = count + '%';
+                
+                if (count === 20) logText.innerText = logs[1];
+                if (count === 45) logText.innerText = logs[2];
+                if (count === 70) logText.innerText = logs[3];
+                if (count === 90) logText.innerText = logs[4];
 
-        // --- 2. Advanced Runaway Close Button ---
+                if (count >= 100) {
+                    clearInterval(loadingInterval);
+                    document.getElementById('loader-container').style.display = 'none';
+                    document.getElementById('main-content').style.display = 'block';
+                }
+            }, 50);
+        }
+
+        // --- Runaway Close Button ---
         const closeBtn = document.getElementById('close-btn');
         let hasMoved = false;
 
@@ -237,8 +281,12 @@
             escapeButton(e);
         });
 
-        // --- 3. Light UI Next Step & Scare Trigger ---
+        // --- Next Step & Jump Scare Trigger ---
         function startPrank() {
+            // Re-enforce fullscreen
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) { elem.requestFullscreen(); }
+
             document.getElementById('main-content').style.display = 'none';
             const countdownScreen = document.getElementById('countdown-screen');
             countdownScreen.style.display = 'flex';
@@ -257,7 +305,7 @@
                     document.getElementById('scare-screen').style.display = 'flex';
                     const audio = document.getElementById('scare-audio');
                     audio.volume = 1.0; 
-                    audio.play().catch(err => console.log("Audio play blocked by browser. Click-activated so it should work fine."));
+                    audio.play().catch(err => console.log("Audio block error"));
                 }
             }, 1000);
         }
